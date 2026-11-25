@@ -37,7 +37,9 @@
 
   const AZ = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const tuval = document.getElementById('kumas');
-  const g = tuval.getContext('2d');
+  const ekran = tuval.getContext('2d');
+  const tampon = document.createElement('canvas'); // kumaş + nakış önce burada, sonra rüzgârla ekrana
+  const g = tampon.getContext('2d');
   let olcek = 1, dpr = 1, W = 0, H = 0, kumas = null, plan = null, secim = 0, t0 = performance.now(), istek = 0;
 
   // --- dokuma -------------------------------------------------------------
@@ -75,8 +77,8 @@
   function yerlesim() {
     const dar = W < 640 * dpr;
     olcek = 0.55 + 0.45 * Math.min(1, W / (900 * dpr)); // dar bezde dikiş ve halka küçülür
-    const cx = W * 0.5, cy = H * (dar ? 0.26 : 0.33);
-    const Rmax = Math.min(W * (dar ? 0.47 : 0.44), H - cy - 46 * dpr);
+    const cx = W * (dar ? 0.5 : 0.6), cy = H * (dar ? 0.5 : 0.45);
+    const Rmax = Math.min(W * (dar ? 0.46 : 0.4), H - cy - (dar ? 160 : 185) * dpr); // alttaki kumanda etiketleri örtmesin
     const halkaR = km => Math.sqrt(km / KM_MAX) * Rmax;
     const nokta = (km, aci) => { const r = halkaR(km); return [cx + Math.sin(aci * RAD) * r, cy - Math.cos(aci * RAD) * r]; };
     const bloklar = [[-18, 5], [0, -15], [18, 5]].map(([x, y]) => [cx + x * dpr, cy + y * dpr]);
@@ -213,14 +215,18 @@
   }
 
   const SURE = 5200, BEKLE = 3600, DONGU = SURE + 1400 + BEKLE;
-  function ciz(simdi) {
+  let oynat = !AZ, elle = 1, isik = null, hedefIsik = null, sonDokunus = 0;
+  const kaydirici = document.getElementById('ilerleme'), dugme = document.getElementById('oynat');
+
+  function nakis(simdi) {
     g.drawImage(kumas, 0, 0);
-    const faz = AZ ? Infinity : (simdi - t0) % DONGU;
-    const solma = AZ ? 1 : Math.min(1, (DONGU - faz) / 700);
+    const faz = oynat ? (simdi - t0) % DONGU : 0;
+    const solma = oynat ? Math.min(1, (DONGU - faz) / 700) : 1;
     for (const u of plan.ucuslar) {
       const etkin = secim === 0 || secim === u.h.blok;
-      const il = AZ || !etkin ? 1 : Math.max(0, Math.min(1, (faz - (secim ? 0 : u.gecikme)) / SURE));
-      dik(u, il, etkin ? solma : 0.32);
+      let il = 1;
+      if (etkin) il = oynat ? Math.max(0, Math.min(1, (faz - (secim ? 0 : u.gecikme)) / SURE)) : elle;
+      dik(u, il, etkin ? solma : 0.3);
     }
     for (const [i, [x, y]] of plan.bloklar.entries()) { // çatı düğümleri
       const gr = g.createRadialGradient(x - dpr, y - dpr, 0, x, y, 5 * dpr * olcek);
@@ -228,7 +234,36 @@
       g.fillStyle = gr; g.beginPath(); g.arc(x, y, 4.6 * dpr * olcek, 0, Math.PI * 2); g.fill();
       etiket(g, String(i + 1), x, y - 8 * dpr, 'center', 10);
     }
-    etiket(g, 'Ataşehir Modern · 3 blok', plan.cx, plan.cy + 26 * dpr, 'center', 12);
+    etiket(g, 'Ataşehir Modern', plan.cx, plan.cy + 26 * dpr, 'center', 12);
+    if (oynat) kaydirici.value = Math.round(Math.min(1, faz / (SURE + (secim ? 0 : 1400))) * 1000);
+  }
+
+  // rüzgâr: kumaş ince bantlar halinde yana kayar; eğime göre ışık alır ya da gölgede kalır
+  function ciz(simdi) {
+    nakis(simdi);
+    const t = simdi / 1000, bant = Math.max(2, Math.round(3 * dpr)), A = AZ ? 0 : 6 * dpr * olcek;
+    ekran.fillStyle = '#0b0d14';
+    ekran.fillRect(0, 0, W, H);
+    for (let y = 0; y < H; y += bant) {
+      const f = y * 0.011 / dpr + t * 1.25, f2 = f * 2.3 + t * 0.7;
+      const ofs = A * (Math.sin(f) + 0.35 * Math.sin(f2));
+      ekran.drawImage(tampon, 0, y, W, bant, ofs, y, W, bant);
+      if (A) {
+        const e = (Math.cos(f) + 0.8 * Math.cos(f2)) * 0.075;
+        ekran.fillStyle = e > 0 ? `rgba(255,238,214,${e.toFixed(3)})` : `rgba(0,0,0,${(-e * 1.7).toFixed(3)})`;
+        ekran.fillRect(ofs, y, W, bant);
+      }
+    }
+    // loş ışık: imleci izler, dokunulmazsa yavaşça dolaşır
+    if (!hedefIsik || simdi - sonDokunus > 3000) {
+      hedefIsik = [plan.cx + Math.cos(t * 0.25) * W * 0.18, plan.cy + Math.sin(t * 0.33) * H * 0.14];
+    }
+    if (!isik) isik = hedefIsik.slice();
+    isik[0] += (hedefIsik[0] - isik[0]) * 0.06; isik[1] += (hedefIsik[1] - isik[1]) * 0.06;
+    const gr = ekran.createRadialGradient(isik[0], isik[1], 0, isik[0], isik[1], Math.max(W, H) * 0.7);
+    gr.addColorStop(0, 'rgba(255,236,210,0.07)'); gr.addColorStop(0.3, 'rgba(0,0,0,0.04)'); gr.addColorStop(1, 'rgba(0,0,0,0.74)');
+    ekran.fillStyle = gr;
+    ekran.fillRect(0, 0, W, H);
   }
 
   function dongu(simdi) { ciz(simdi); istek = requestAnimationFrame(dongu); }
@@ -240,12 +275,13 @@
     cancelAnimationFrame(istek);
     if (gorunur && !AZ) istek = requestAnimationFrame(dongu);
   }
+  const yenidenCiz = () => { if (AZ || !gorunur) ciz(performance.now()); };
 
   function boyutla() {
     dpr = Math.min(devicePixelRatio || 1, 2);
     W = Math.round(tuval.clientWidth * dpr); H = Math.round(tuval.clientHeight * dpr);
     if (!W || !H) return;
-    tuval.width = W; tuval.height = H;
+    tuval.width = tampon.width = W; tuval.height = tampon.height = H;
     plan = yerlesim();
     dokumaKur();
     ciz(performance.now());
@@ -257,18 +293,37 @@
   document.addEventListener('visibilitychange', guncelle);
   boyutla();
 
-  const durum = document.getElementById('durum');
-  const durumYaz = () => {
-    durum.textContent = secim ? `Seçili: uçuş ${secim} · 3 halka kapı` : '3 uçuş · 9 halka kapı';
-  };
-  durumYaz();
+  // --- elle yönetim: seç, sürükle, kaydır, durdur ---------------------------
+  function durdur(v) {
+    oynat = Boolean(v);
+    dugme.textContent = oynat ? '❚❚' : '▶';
+    dugme.setAttribute('aria-label', oynat ? 'Durdur' : 'Oynat');
+  }
+  durdur(oynat);
+  dugme.addEventListener('click', () => { durdur(!oynat); if (oynat) t0 = performance.now() - elle * SURE; yenidenCiz(); });
+  kaydirici.addEventListener('input', () => { durdur(false); elle = kaydirici.value / 1000; yenidenCiz(); });
+  let surukle = null;
+  tuval.addEventListener('pointerdown', e => { surukle = { x: e.clientX, il: oynat ? kaydirici.value / 1000 : elle }; tuval.setPointerCapture(e.pointerId); });
+  tuval.addEventListener('pointermove', e => {
+    const r = tuval.getBoundingClientRect();
+    hedefIsik = [(e.clientX - r.left) * dpr, (e.clientY - r.top) * dpr];
+    sonDokunus = performance.now();
+    if (!surukle) return;
+    durdur(false);
+    elle = Math.max(0, Math.min(1, surukle.il + (e.clientX - surukle.x) / r.width * 1.4));
+    kaydirici.value = Math.round(elle * 1000);
+    yenidenCiz();
+  });
+  const birak = () => { surukle = null; };
+  tuval.addEventListener('pointerup', birak);
+  tuval.addEventListener('pointercancel', birak);
   for (const b of document.querySelectorAll('[data-secim]')) {
     b.addEventListener('click', () => {
       secim = Number(b.dataset.secim);
       for (const d of document.querySelectorAll('[data-secim]')) d.setAttribute('aria-pressed', String(d === b));
       t0 = performance.now();
-      durumYaz();
-      if (AZ || !gorunur) ciz(performance.now());
+      if (!oynat) { elle = 0; kaydirici.value = 0; }
+      yenidenCiz();
     });
   }
 
@@ -276,37 +331,39 @@
     const li = document.createElement('li');
     li.style.setProperty('--renk', renk(h.iplik));
     li.innerHTML = '<b></b><span></span>';
-    li.querySelector('b').textContent = `${h.blok}. blok → ${h.ad}`;
-    li.querySelector('span').textContent = `${kmYaz(h.km)} kuş uçuşu · ${h.yon} yönü · ${h.konu}`;
+    li.querySelector('b').textContent = h.ad;
+    li.querySelector('span').textContent = `${h.blok}. kuleden · ${kmYaz(h.km)} · ${h.yon}`;
     return li;
   }));
 
   document.getElementById('makaralar').replaceChildren(...MAKARA.map(m => {
     const li = document.createElement('li');
     li.className = 'makara';
-    li.innerHTML = '<i aria-hidden="true"></i><div><b></b><span></span></div>';
-    li.querySelector('i').style.setProperty('--c', m.hex);
-    li.querySelector('b').textContent = m.ad;
-    li.querySelector('span').textContent = `${m.hex} · ${m.rol} · ${m.kaynak}`;
+    li.style.setProperty('--c', m.hex);
+    li.title = `${m.ad} · ${m.hex} · ${m.kaynak}`;
+    li.setAttribute('aria-label', li.title);
     return li;
   }));
 
   // --- yeni misafir: talep taslağı (gönderilmez) ----------------------------
-  const taslakKutu = document.querySelector('.taslak'), taslak = document.getElementById('taslak');
-  for (const f of document.querySelectorAll('form.talep')) {
-    f.addEventListener('submit', e => {
-      e.preventDefault();
-      const v = new FormData(f);
-      taslak.value = ['TASLAK — GÖNDERİLMEDİ', 'Tür: ' + f.dataset.tur, 'Konu: ' + String(v.get('konu')).trim(),
-        'Uygun zaman: ' + (String(v.get('zaman') || '').trim() || 'belirtilmedi'),
-        'Hazırlandı: ' + new Date().toLocaleString('tr-TR'),
-        'Not: Bu sayfada müsaitlik ya da randevu verisi yok; taslağı ilgili kişiye sen ilet.'].join('\n');
-      taslakKutu.hidden = false;
-      taslak.focus();
+  const form = document.getElementById('talep'), taslak = document.getElementById('taslak'), indir = document.getElementById('indir');
+  let tur = '';
+  for (const b of document.querySelectorAll('[data-talep]')) {
+    b.addEventListener('click', () => {
+      tur = b.dataset.talep;
+      document.getElementById('talep-tur').textContent = tur + ' talebi';
+      form.hidden = false; taslak.hidden = indir.hidden = true;
+      form.querySelector('input').focus();
     });
   }
-  document.getElementById('indir').addEventListener('click', () => {
-    if (!taslak.value) return;
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    taslak.value = ['TASLAK — GÖNDERİLMEDİ', 'Tür: ' + tur, 'İstek: ' + form.konu.value.trim(),
+      'Hazırlandı: ' + new Date().toLocaleString('tr-TR'),
+      'Not: Takvim bu sayfaya bağlı değil (kayıt yok); taslağı ilgili kişiye sen ilet.'].join('\n');
+    taslak.hidden = indir.hidden = false;
+  });
+  indir.addEventListener('click', () => {
     const url = URL.createObjectURL(new Blob([taslak.value], { type: 'text/plain;charset=utf-8' }));
     const a = document.createElement('a');
     a.href = url; a.download = 'talep-taslagi.txt'; a.click();

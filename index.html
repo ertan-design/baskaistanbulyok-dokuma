@@ -3,111 +3,69 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Başka İstanbul yok: Ataşehir Modern'in üç bloğundan üç uçuş, şehrin dokusuna iplikle işlenmiş. Harita yok, kumaş var.">
-<meta name="theme-color" content="#14192a">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2314192a'/%3E%3Cpath d='M0 4h16M0 8h16M0 12h16' stroke='%23d9cdb8' stroke-width='1.4'/%3E%3Ccircle cx='8' cy='8' r='3.2' fill='none' stroke='%236bb1d5' stroke-width='1.4'/%3E%3C/svg%3E">
-<title>Başka İstanbul yok · Dokuma Ataşehir</title>
+<meta name="description" content="Çatıdan uç, şehre kon. Ataşehir'in üç kulesinden üç uçuş, iplikle işlenmiş bir kumaşta.">
+<meta name="theme-color" content="#0b0d14">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230b0d14'/%3E%3Cpath d='M0 4h16M0 8h16M0 12h16' stroke='%23d9cdb8' stroke-width='1.4'/%3E%3Ccircle cx='8' cy='8' r='3.2' fill='none' stroke='%236bb1d5' stroke-width='1.4'/%3E%3C/svg%3E">
+<title>Başka İstanbul yok</title>
 <link rel="stylesheet" href="dokuma.css">
 <script src="dokuma.js" defer></script>
 </head>
 <body>
-<a class="atla" href="#ana">İçeriğe geç</a>
-<header class="ust">
-  <a class="marka" href="#">başka <b>istanbul</b> yok</a>
-  <nav aria-label="Sayfa içi"><a href="#ucuslar">Uçuşlar</a><a href="#misafir">Yeni misafir</a><a href="#iplik">İplik kartı</a><a href="#halkalar">Halkalar</a></nav>
-</header>
-
-<main id="ana">
-  <section class="giris">
-    <p class="kucuk">Ataşehir'in üst halkası · Claude disiplini: dokuma</p>
-    <h1>Harita yok.<br><em>Şehir bir kumaş.</em></h1>
-    <p class="ozet">Ataşehir Modern'in üç bloğunun çatısından üç uçucu kalkıyor: biri Watergarden'a, biri Finanskent'e, biri Maltepe sahilindeki konser alanına. Yollar haritaya çizilmedi; kumaşa nakış diye işlendi. Her halka bir kapı, her düğüm bir varış.</p>
-  </section>
-
-  <section id="ucuslar" class="tezgah" aria-label="Üç uçuş">
-    <div class="tezgah-ust">
-      <div class="secim" role="group" aria-label="Uçuş seç">
-        <button type="button" data-secim="0" aria-pressed="true">Üçü birden</button>
-        <button type="button" data-secim="1" aria-pressed="false">1 · Watergarden</button>
-        <button type="button" data-secim="2" aria-pressed="false">2 · Finanskent</button>
-        <button type="button" data-secim="3" aria-pressed="false">3 · Maltepe</button>
+<main>
+  <section class="sahne" aria-label="Üç uçuş">
+    <canvas id="kumas" role="img" aria-label="Rüzgârda dalgalanan dokuma kumaş; üç kuleden üç hedefe işlenmiş uçuş dikişleri"></canvas>
+    <div class="ust-yazi">
+      <p class="marka">başka istanbul yok</p>
+      <h1>Çatıdan uç.<br><em>Şehre kon.</em></h1>
+    </div>
+    <div class="kumanda">
+      <div class="secim" role="group" aria-label="Uçuş">
+        <button type="button" data-secim="0" aria-pressed="true">Hepsi</button>
+        <button type="button" data-secim="1" aria-pressed="false">Watergarden</button>
+        <button type="button" data-secim="2" aria-pressed="false">Finanskent</button>
+        <button type="button" data-secim="3" aria-pressed="false">Sahil</button>
       </div>
-      <p class="durum" id="durum" aria-live="polite"></p>
+      <div class="surec">
+        <button type="button" id="oynat" aria-label="Durdur">❚❚</button>
+        <input type="range" id="ilerleme" min="0" max="1000" value="0" aria-label="Uçuşu elle sür">
+      </div>
+      <p class="ipucu">Kumaşı sürükle: uçuşu sen yönet.</p>
     </div>
-    <canvas id="kumas" role="img" aria-label="Dokuma kumaş üzerinde Ataşehir Modern'in üç bloğundan üç hedefe işlenmiş uçuş dikişleri"></canvas>
+  </section>
+
+  <section class="kisa" aria-label="Uçuşlar">
     <ol class="ucus-liste" id="ucus-liste"></ol>
-    <p class="not">Yön ve uzaklık gerçek koordinatlardan hesaplanır (kuş uçuşu). Kumaşta uzaklık karekök ölçeğiyle sıkıştırılır ki 2 km ile 7,6 km aynı bezde okunabilsin; yön korunur. Blokların tek tek konumu bilinmiyor, üç çatı düğümü temsilidir.</p>
   </section>
 
-  <section class="prova" aria-label="Uçuş provası">
-    <video src="ucus-provasi.mp4" poster="ucus-provasi.jpg" controls muted playsinline preload="none"></video>
-    <p><b>Uçuş provası.</b> Halkaların içinden geçen wingsuit (Genie üretimi, Kaptan'ın arşivinden). Kumaştaki halka kapılar bu provadan alındı.</p>
-  </section>
-
-  <section id="misafir" class="misafir">
-    <h2>Binaya yeni taşınan misafir</h2>
-    <p class="ozet">Taşındığın gün moda, sanat, teknoloji ve toprak aynı kapıdan girer. Elimizde olmayan bilgiyi uydurmuyoruz: takvim bağlanmadıysa "kayıt yok" yazar, talebini sen hazırlarsın.</p>
-    <div class="dugmeler">
-      <article class="dugme">
-        <h3>Moda</h3>
-        <p>Defile ve koleksiyon yayını, tasarımcı stüdyoları.</p>
-        <p><a href="https://www.afair.live/">afair.live ↗</a> · <a href="https://www.afair.studio/">afair.studio ↗</a></p>
-      </article>
-      <article class="dugme">
-        <h3>Online terzi müsait mi?</h3>
-        <p class="yok">Müsaitlik: kayıt yok. Terzinin takvimi bu sayfaya bağlanmadı.</p>
-        <form class="talep" data-tur="Terzi talebi">
-          <label>Ne diktirmek istiyorsun<input name="konu" maxlength="120" required placeholder="ör. ceket kısaltma"></label>
-          <label>Uygun olduğun zaman<input name="zaman" maxlength="80" placeholder="ör. hafta içi akşam"></label>
-          <button type="submit">Talep taslağını hazırla</button>
-        </form>
-      </article>
-      <article class="dugme">
-        <h3>Tarım danışmanından randevu</h3>
-        <p class="yok">Randevu sistemi: kayıt yok. Danışmanın takvimi bağlanmadı.</p>
-        <form class="talep" data-tur="Tarım danışmanı randevu talebi">
-          <label>Konu<input name="konu" maxlength="120" required placeholder="ör. balkonda domates"></label>
-          <label>Uygun olduğun zaman<input name="zaman" maxlength="80" placeholder="ör. cumartesi sabah"></label>
-          <button type="submit">Talep taslağını hazırla</button>
-        </form>
-        <p><a href="https://tarim.online/">tarim.online ↗</a> · <a href="https://hasat.online/">hasat.online ↗</a></p>
-      </article>
-      <article class="dugme">
-        <h3>Sanat ve teknoloji</h3>
-        <p>Sahne, kapılar ve yapay zekâ ekibinin çalıştığı yer.</p>
-        <p><a href="https://www.selinahbap.com/">selinahbap.com ↗</a> · <a href="https://www.codekafa.com/">codekafa.com ↗</a></p>
-      </article>
-      <article class="dugme">
-        <h3>Ataşehir ana siteleri</h3>
-        <p>Şehir pilotu ve bina hizmetleri.</p>
-        <p><a href="https://www.xn--ataehirmodern-ktc.com/">ataşehirmodern.com ↗</a> · <a href="https://www.xn--modernataehir-qtc.com/">modernataşehir.com ↗</a></p>
-      </article>
+  <section class="misafir" aria-label="Yeni misafir">
+    <h2>Yeni taşındın mı?</h2>
+    <div class="kartlar">
+      <a class="kart" href="https://www.afair.live/"><b>Moda</b><span>afair.live</span></a>
+      <a class="kart" href="https://www.afair.studio/"><b>Tasarım</b><span>afair.studio</span></a>
+      <a class="kart" href="https://www.selinahbap.com/"><b>Sanat · teknoloji</b><span>selinahbap.com</span></a>
+      <a class="kart" href="https://tarim.online/"><b>Tarım</b><span>tarim.online</span></a>
+      <a class="kart" href="https://www.xn--ataehirmodern-ktc.com/"><b>Bina</b><span>ataşehirmodern.com</span></a>
+      <button type="button" class="kart" data-talep="Terzi"><b>Terzi müsait mi?</b><span>takvim: kayıt yok · talep yaz</span></button>
+      <button type="button" class="kart" data-talep="Tarım danışmanı randevusu"><b>Danışman randevusu</b><span>takvim: kayıt yok · talep yaz</span></button>
     </div>
-    <div class="taslak" hidden>
-      <label>Hazırlanan taslak (hiçbir yere gönderilmedi)<textarea id="taslak" readonly rows="6"></textarea></label>
-      <button type="button" id="indir">TXT olarak indir</button>
-    </div>
+    <form class="talep" id="talep" hidden>
+      <label><span id="talep-tur">Talep</span><input name="konu" maxlength="120" required placeholder="Ne istiyorsun?"></label>
+      <button type="submit">Taslağı hazırla</button>
+      <textarea id="taslak" readonly rows="5" hidden aria-label="Hazırlanan taslak (gönderilmedi)"></textarea>
+      <button type="button" id="indir" hidden>İndir</button>
+    </form>
   </section>
 
-  <section id="iplik" class="iplik">
-    <h2>İplik kartı</h2>
-    <p class="ozet">Ekran rengi değil, iplik rengi düşünüldü: her ton ayrı bir makara, karışım yok. Üç makara uçuş provasının karelerinden ölçüldü; ötekiler seçildi ve öyle yazıldı.</p>
+  <section class="iplik" aria-label="İplik kartı">
     <ul class="makaralar" id="makaralar"></ul>
   </section>
 
-  <section id="halkalar" class="halkalar">
-    <h2>Halkalar</h2>
-    <ol>
-      <li><b>Bina.</b> Ataşehir Modern: üç blok, yaklaşık 1.000 konut. Çatı, uçuşun başladığı yer.</li>
-      <li><b>Ataşehir.</b> Watergarden ve Finanskent iki kilometre içinde; mahalle yürüyerek de dokunur.</li>
-      <li><b>İstanbul.</b> Sahil ve konser alanı yedi buçuk kilometre güneyde. Üst halka burada kapanır: başka İstanbul yok.</li>
-    </ol>
-  </section>
+  <details class="nasil">
+    <summary>Nasıl yapıldı</summary>
+    <p>Harita yok: konumlar OpenStreetMap'ten (© OpenStreetMap katkıcıları, ODbL) yalnız enlem ve boylam olarak alındı; yön gerçek, uzaklık sığsın diye karekökle sıkıştırıldı. Kumaş 2/1 dimi örgü, uçuşlar koşu dikişi, halkalar wingsuit provasından. Üç iplik rengi provanın karelerinden ölçüldü. Terzi ve danışman takvimi bağlı değil; talep tarayıcında kalır, gönderilmez.</p>
+    <video src="ucus-provasi.mp4" poster="ucus-provasi.jpg" controls muted playsinline preload="none"></video>
+    <p>CLAUDE · claude-opus-5-5 · Codekafa Yayın</p>
+  </details>
 </main>
-
-<footer class="alt">
-  <p>Konumlar: © OpenStreetMap katkıcıları (ODbL), Nominatim araması, 25.11.2026. Harita görüntüsü kullanılmadı.</p>
-  <p>Hazırlayan: CLAUDE · claude-opus-5-5 · Codekafa Yayın. Sayfa dış sunucuya istek göndermez; talepler tarayıcında kalır.</p>
-</footer>
 </body>
 </html>
