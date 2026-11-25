@@ -9,6 +9,7 @@
 <title>Başka İstanbul yok</title>
 <link rel="stylesheet" href="dokuma.css">
 <script src="dokuma.js" defer></script>
+<script src="bez3b.js" defer></script>
 </head>
 <body>
 <main>
@@ -30,6 +31,20 @@
         <input type="range" id="ilerleme" min="0" max="1000" value="0" aria-label="Uçuşu elle sür">
       </div>
       <p class="ipucu">Kumaşı sürükle: uçuşu sen yönet.</p>
+    </div>
+  </section>
+
+  <section class="incele" aria-label="Kumaşı çevir">
+    <canvas id="bez3b" tabindex="0" role="img" aria-label="Rüzgârda dalgalanan üç boyutlu kumaş; sürükleyerek ya da ok tuşlarıyla 360 derece çevrilir"></canvas>
+    <div class="incele-yazi">
+      <h2>Kumaşı çevir.</h2>
+      <p>Sürükle. 360° dön.</p>
+      <div class="secim" role="group" aria-label="Kumaş">
+        <button type="button" data-bez="gece" aria-pressed="true">Gece</button>
+        <button type="button" data-bez="su" aria-pressed="false">Su</button>
+        <button type="button" data-bez="altin" aria-pressed="false">Altın</button>
+        <button type="button" data-bez="mercan" aria-pressed="false">Mercan</button>
+      </div>
     </div>
   </section>
 
